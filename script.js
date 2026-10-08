@@ -1,4 +1,4 @@
-import { SITE_CONTENT } from "./content.js";
+import { SITE_CONTENT } from "./content.js?v=10";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -63,15 +63,25 @@ function makeProjectOverlay(project, index) {
   player.setAttribute("stream-type", "on-demand");
   player.setAttribute("preload", "metadata");
   player.setAttribute("playsinline", "");
+  player.setAttribute("muted", "");
+  player.setAttribute("loop", "");
   player.muted = true;
   player.defaultMuted = true;
+  const posterUrl = `https://image.mux.com/${encodeURIComponent(project.playbackId)}/thumbnail.jpg?time=1`;
+  const poster = document.createElement("img");
+  poster.className = "project-poster";
+  poster.src = posterUrl;
+  poster.alt = "";
+  videoWrap.append(poster);
+  player.setAttribute("poster", posterUrl);
   videoWrap.append(player);
 
-  /* Keep the Photoshop preview visible until the real stream is ready, then
-     reveal Mux in the exact same window. */
-  const showPlayer = () => videoWrap.classList.add("is-ready");
-  player.addEventListener("loadeddata", showPlayer, { once: true });
-  player.addEventListener("canplay", showPlayer, { once: true });
+  // Keep the thumbnail visible until playback actually starts, including
+  // when Safari delays loading or rejects autoplay.
+  player.addEventListener("playing", () => videoWrap.classList.add("is-ready"));
+  for (const event of ["pause", "ended", "error", "emptied"]) {
+    player.addEventListener(event, () => videoWrap.classList.remove("is-ready"));
+  }
 
   const title = document.createElement("div");
   title.className = `project-title row-${row}`;
@@ -109,6 +119,7 @@ let activePreview = null;
 
 function chooseActivePreview() {
   let best = null;
+  const suspended = $("#video-dialog").open || document.hidden;
   let bestRatio = 0;
 
   for (const player of previewPlayers) {
@@ -119,7 +130,7 @@ function chooseActivePreview() {
     }
   }
 
-  if (bestRatio < 0.55) best = null;
+  if (bestRatio < 0.55 || suspended) best = null;
 
   for (const player of previewPlayers) {
     if (player === best) {
@@ -163,6 +174,7 @@ function renderProjects() {
 function openFullPlayer(project) {
   const dialog = $("#video-dialog");
   const wrap = $("#dialog-player-wrap");
+  activePreview = null;
   previewPlayers.forEach((p) => { if (typeof p.pause === "function") p.pause(); });
 
   wrap.replaceChildren();
@@ -195,7 +207,8 @@ function wireSocials() {
 }
 
 renderClients();
-renderProjects();
+// Ensure properties and playback methods are available before observing previews.
+customElements.whenDefined("mux-player").then(renderProjects);
 wireSocials();
 
 $("#dialog-close").addEventListener("click", closeFullPlayer);
@@ -205,3 +218,5 @@ $("#video-dialog").addEventListener("click", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeFullPlayer();
 });
+
+document.addEventListener("visibilitychange", chooseActivePreview);

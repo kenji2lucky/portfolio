@@ -26,8 +26,8 @@ export const SITE_CONTENT = {
     },
     {
       caseNumber: "03",
-      title: "Turning 1 Into 1,000,000 in GTA 5 RP",
-      playbackId: "4qn226eqITSUdLtU9Y7lpIddSSkDld016Mx00k02lDdPjE",
+      title: "LuckMaxxer Trial Edit",
+      playbackId: "Succ00GCiGtuRCfLpMj00g00g4cwW8W5HmI01o3xUYfVOqU",
     },
   ],
 };

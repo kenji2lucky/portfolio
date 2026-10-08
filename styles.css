@@ -265,3 +265,13 @@ a { color: inherit; }
 .featured-controls-overlay.control-1 { clip-path: inset(28.4013605442% 4.3945312500% 64.4557823129% 91.4550781250%); }
 .featured-controls-overlay.control-2 { clip-path: inset(57.1428571429% 4.3945312500% 35.5442176871% 91.4550781250%); }
 .featured-controls-overlay.control-3 { clip-path: inset(86.5646258503% 4.3945312500% 6.2074829932% 91.4550781250%); }
+
+/* A separate image remains visible when iOS cannot autoplay video. */
+.project-poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
